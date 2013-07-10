@@ -50,8 +50,8 @@ BOOTDD_VOLUME_ID ?= "Boot ${MACHINE}"
 BOOT_SPACE ?= "8192"
 
 # Home space in [KiB]
-HOME_SPACE ?= "1048576"
-HOMEFS_IMAGE ?= "${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.homefs.ext2"
+HOMEFS_SPACE ?= "1048576"
+HOMEFS_IMAGE ?= "${DEPLOY_DIR_IMAGE}/${IMAGE_NAME}.homefs.ext3"
 
 # Set alignment to 4MB [in KiB]
 IMAGE_ROOTFS_ALIGNMENT = "4096"
@@ -95,7 +95,7 @@ generate_imx_sdcard () {
 	parted -s ${SDCARD} mklabel msdos
 	parted -s ${SDCARD} unit KiB mkpart primary fat32 ${IMAGE_ROOTFS_ALIGNMENT} $(expr ${IMAGE_ROOTFS_ALIGNMENT} \+ ${BOOT_SPACE_ALIGNED})
 	parted -s ${SDCARD} unit KiB mkpart primary $(expr  ${IMAGE_ROOTFS_ALIGNMENT} \+ ${BOOT_SPACE_ALIGNED}) $(expr ${IMAGE_ROOTFS_ALIGNMENT} \+ ${BOOT_SPACE_ALIGNED} \+ $ROOTFS_SIZE)
-	parted -s ${SDCARD} unit KiB mkpart primary $(expr  ${IMAGE_ROOTFS_ALIGNMENT} \+ ${BOOT_SPACE_ALIGNED} \+ $ROOTFS_SIZE) $(expr ${IMAGE_ROOTFS_ALIGNMENT} \+ ${BOOT_SPACE_ALIGNED} \+ $ROOTFS_SIZE \+ ${HOME_SPACE} )
+	parted -s ${SDCARD} unit KiB mkpart primary $(expr  ${IMAGE_ROOTFS_ALIGNMENT} \+ ${BOOT_SPACE_ALIGNED} \+ $ROOTFS_SIZE) $(expr ${IMAGE_ROOTFS_ALIGNMENT} \+ ${BOOT_SPACE_ALIGNED} \+ $ROOTFS_SIZE \+ ${HOMEFS_SPACE} )
 	parted ${SDCARD} print
 
 	# Burn bootloader
@@ -266,7 +266,7 @@ IMAGE_CMD_sdcard () {
 	# Align boot partition and calculate total SD card image size
 	BOOT_SPACE_ALIGNED=$(expr ${BOOT_SPACE} + ${IMAGE_ROOTFS_ALIGNMENT} - 1)
 	BOOT_SPACE_ALIGNED=$(expr ${BOOT_SPACE_ALIGNED} - ${BOOT_SPACE_ALIGNED} % ${IMAGE_ROOTFS_ALIGNMENT})
-	SDCARD_SIZE=$(expr ${IMAGE_ROOTFS_ALIGNMENT} + ${BOOT_SPACE_ALIGNED} + $ROOTFS_SIZE + ${HOME_SPACE} + ${IMAGE_ROOTFS_ALIGNMENT})
+	SDCARD_SIZE=$(expr ${IMAGE_ROOTFS_ALIGNMENT} + ${BOOT_SPACE_ALIGNED} + $ROOTFS_SIZE + ${HOMEFS_SPACE} + ${IMAGE_ROOTFS_ALIGNMENT})
 
 	# Initialize a sparse file
 	dd if=/dev/zero of=${SDCARD} bs=1 count=0 seek=$(expr 1024 \* ${SDCARD_SIZE})
